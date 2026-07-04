@@ -12,23 +12,24 @@ def get_connection():
 
 def init_db():
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute("""
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
-        email TEXT UNIQUE,
-        password TEXT
+        username TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
     )
     """)
 
-    cursor.execute("""
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS predictions(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_email TEXT,
+        user_id INTEGER,
         url TEXT,
         prediction TEXT,
+        probability REAL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
@@ -37,123 +38,113 @@ def init_db():
     conn.close()
 
 
-# -----------------------------
-# USER FUNCTIONS
-# -----------------------------
+# ---------------- USERS ---------------- #
 
 def register_user(username, email, password):
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
     try:
-        cursor.execute(
+        cur.execute(
             "INSERT INTO users(username,email,password) VALUES(?,?,?)",
             (username, email, password),
         )
         conn.commit()
-        return True
-    except sqlite3.IntegrityError:
-        return False
-    finally:
         conn.close()
+        return True, "Registration Successful."
+
+    except sqlite3.IntegrityError:
+        conn.close()
+        return False, "Email already exists."
 
 
 def verify_user(email, password):
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute(
+    cur.execute(
         "SELECT * FROM users WHERE email=? AND password=?",
         (email, password),
     )
 
-    user = cursor.fetchone()
+    user = cur.fetchone()
     conn.close()
 
     return user
 
 
-# -----------------------------
-# PREDICTION HISTORY
-# -----------------------------
+# ---------------- HISTORY ---------------- #
 
-def add_scan_history(user_email, url, prediction):
+def add_scan_history(user_id, url, prediction, probability):
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute(
+    cur.execute(
         """
-        INSERT INTO predictions(user_email,url,prediction)
-        VALUES(?,?,?)
+        INSERT INTO predictions(user_id,url,prediction,probability)
+        VALUES(?,?,?,?)
         """,
-        (user_email, url, prediction),
+        (user_id, url, prediction, probability),
     )
 
     conn.commit()
     conn.close()
 
 
-def get_history(user_email):
+def get_history(user_id):
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute(
+    cur.execute(
         """
         SELECT *
         FROM predictions
-        WHERE user_email=?
+        WHERE user_id=?
         ORDER BY created_at DESC
         """,
-        (user_email,),
+        (user_id,),
     )
 
-    history = cursor.fetchall()
+    rows = cur.fetchall()
     conn.close()
 
-    return history
+    return rows
 
 
-# -----------------------------
-# PROFILE
-# -----------------------------
-
-def get_user_stats(user_email):
+def get_user_stats(user_id):
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute(
-        "SELECT COUNT(*) FROM predictions WHERE user_email=?",
-        (user_email,),
+    cur.execute(
+        "SELECT COUNT(*) FROM predictions WHERE user_id=?",
+        (user_id,),
     )
+    total = cur.fetchone()[0]
 
-    total_scans = cursor.fetchone()[0]
-
-    cursor.execute(
+    cur.execute(
         """
         SELECT COUNT(*)
         FROM predictions
-        WHERE user_email=? AND prediction='Phishing'
+        WHERE user_id=? AND prediction='Phishing'
         """,
-        (user_email,),
+        (user_id,),
     )
+    phishing = cur.fetchone()[0]
 
-    phishing = cursor.fetchone()[0]
-
-    cursor.execute(
+    cur.execute(
         """
         SELECT COUNT(*)
         FROM predictions
-        WHERE user_email=? AND prediction='Legitimate'
+        WHERE user_id=? AND prediction='Legitimate'
         """,
-        (user_email,),
+        (user_id,),
     )
-
-    legitimate = cursor.fetchone()[0]
+    safe = cur.fetchone()[0]
 
     conn.close()
 
     return {
-        "total": total_scans,
+        "total": total,
         "phishing": phishing,
-        "legitimate": legitimate,
+        "safe": safe,
     }

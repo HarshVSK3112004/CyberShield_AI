@@ -13,12 +13,12 @@ if st.session_state.get("logged_in"):
         st.rerun()
 else:
     with st.form("login_form"):
-        username = st.text_input("Username")
+        email = st.text_input("Email")
         password = st.text_input("Password", type="password")
         submitted = st.form_submit_button("Login")
 
         if submitted:
-            user = verify_user(username, password)
+            user = verify_user(email, password)
             if user:
                 st.session_state.logged_in = True
                 st.session_state.user = user
