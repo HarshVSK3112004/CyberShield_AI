@@ -1,0 +1,59 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": ["hi", "hello", "hey", "good morning", "good evening", "hi there"],
+      "responses": ["Hello! I'm the CyberShield-AI assistant. Ask me anything about phishing or online safety."]
+    },
+    {
+      "tag": "goodbye",
+      "patterns": ["bye", "goodbye", "see you", "exit", "quit"],
+      "responses": ["Stay safe online! Feel free to come back if you have more questions."]
+    },
+    {
+      "tag": "what_is_phishing",
+      "patterns": ["what is phishing", "define phishing", "explain phishing", "phishing meaning"],
+      "responses": ["Phishing is a cyberattack where attackers impersonate a trustworthy source (like a bank or well-known company) via email, text, or a fake website to trick you into revealing sensitive information such as passwords or card numbers."]
+    },
+    {
+      "tag": "how_to_detect_phishing",
+      "patterns": ["how to detect phishing", "how do i know if a site is phishing", "signs of phishing", "how to identify a fake website"],
+      "responses": ["Look for: misspelled domain names, no HTTPS padlock, urgent or threatening language, unexpected attachments/links, mismatched sender addresses, and requests for sensitive info. You can also paste a URL into the Dashboard here to get an automated check."]
+    },
+    {
+      "tag": "how_app_works",
+      "patterns": ["how does this app work", "how does cybershield work", "what does this tool do"],
+      "responses": ["CyberShield-AI analyzes a URL using a trained machine learning model plus heuristics (URL structure, suspicious keywords), and can also check the site's SSL certificate, WHOIS domain age, and VirusTotal reputation to give you a combined risk verdict."]
+    },
+    {
+      "tag": "ssl_question",
+      "patterns": ["what is ssl", "what does https mean", "why is ssl important", "ssl certificate"],
+      "responses": ["SSL/TLS certificates encrypt data between your browser and a website, and confirm the site's identity was verified by a certificate authority. A missing or invalid certificate is a red flag, though phishing sites can still have valid SSL certificates, so it's not proof of safety on its own."]
+    },
+    {
+      "tag": "whois_question",
+      "patterns": ["what is whois", "domain age", "why does domain age matter"],
+      "responses": ["WHOIS records show who registered a domain and when. Phishing domains are frequently registered only days or weeks before an attack, so a very new domain age is a common red flag."]
+    },
+    {
+      "tag": "what_to_do_if_phished",
+      "patterns": ["i clicked a phishing link", "i think i got phished", "what should i do after phishing", "i entered my password on a fake site"],
+      "responses": ["Act quickly: 1) Change the affected password immediately (and anywhere else you reused it), 2) Enable two-factor authentication, 3) Monitor your bank/card statements, 4) Report the site to your email provider or IT/security team, 5) Run a malware scan on your device if you downloaded anything."]
+    },
+    {
+      "tag": "report_phishing",
+      "patterns": ["how do i report phishing", "where to report a phishing site"],
+      "responses": ["You can report phishing sites to Google Safe Browsing, your email provider (e.g. 'Report phishing' in Gmail), or national bodies like CERT-In (India) or the APWG. Reporting helps get the site blocked for others."]
+    },
+    {
+      "tag": "thanks",
+      "patterns": ["thanks", "thank you", "appreciate it"],
+      "responses": ["You're welcome! Stay safe online."]
+    },
+    {
+      "tag": "fallback",
+      "patterns": [],
+      "responses": ["I'm not sure about that one. Try asking about phishing signs, SSL/WHOIS checks, or what to do if you clicked a suspicious link."]
+    }
+  ]
+}
