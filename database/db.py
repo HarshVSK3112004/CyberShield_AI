@@ -1,6 +1,8 @@
 import sqlite3
 import os
 
+from utils.helper import hash_password, verify_password
+
 DB_PATH = os.path.join(os.path.dirname(__file__), "database.db")
 
 
@@ -17,7 +19,7 @@ def init_db():
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     )
@@ -41,36 +43,44 @@ def init_db():
 # ---------------- USERS ---------------- #
 
 def register_user(username, email, password):
+    """Create a new user. Passwords are hashed (SHA-256 + static salt, see
+    utils.helper.hash_password) before being written to the database — the
+    plaintext password is never stored."""
     conn = get_connection()
     cur = conn.cursor()
+
+    hashed = hash_password(password)
 
     try:
         cur.execute(
             "INSERT INTO users(username,email,password) VALUES(?,?,?)",
-            (username, email, password),
+            (username, email, hashed),
         )
         conn.commit()
         conn.close()
         return True, "Registration Successful."
 
-    except sqlite3.IntegrityError:
+    except sqlite3.IntegrityError as e:
         conn.close()
+        # UNIQUE constraint violates on either username or email — figure out which
+        if "username" in str(e):
+            return False, "That username is already taken."
         return False, "Email already exists."
 
 
 def verify_user(email, password):
+    """Look up a user by email and check the supplied password against the
+    stored hash. Returns the user row on success, or None on failure."""
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute(
-        "SELECT * FROM users WHERE email=? AND password=?",
-        (email, password),
-    )
-
+    cur.execute("SELECT * FROM users WHERE email=?", (email,))
     user = cur.fetchone()
     conn.close()
 
-    return user
+    if user and verify_password(password, user["password"]):
+        return user
+    return None
 
 
 # ---------------- HISTORY ---------------- #
